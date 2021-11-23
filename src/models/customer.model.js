@@ -14,7 +14,7 @@ const customerSchema = mongoose.Schema({
     referalCode: { type: String, require: true },
 },
     {
-        collection: 'customer',
+        collection: 'customers',
         strict: 'throw'
     }
 );

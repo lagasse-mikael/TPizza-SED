@@ -18,6 +18,10 @@ const orderSchema = mongoose.Schema({
         price: { type: String, required: true, min: 0 },
         topping: [{ type: String, required: true, enum: PIZZA_TOPPINGS }],
     }]
-})
+},
+    {
+        collection: 'orders',
+        strict: 'throw'
+    })
 
 export default mongoose.model('Order', orderSchema);

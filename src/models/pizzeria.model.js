@@ -15,9 +15,9 @@ const pizzeriaSchema = mongoose.Schema({
     }
 },
     {
-        collection: 'pizzeria',
+        collection: 'pizzerias',
         strict: 'throw'
     }
 )
 
-export default mongoose.model('Pizzeria', observationSchema);
+export default mongoose.model('Pizzeria', pizzeriaSchema);
