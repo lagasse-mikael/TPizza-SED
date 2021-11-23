@@ -1,45 +1,23 @@
-import mongoose from'mongoose';
-import {PIZZA_SIZES, PIZZA_TOPPINGS } from '../data/constants.js';
+import mongoose from 'mongoose';
+import { PIZZA_SIZES, PIZZA_TOPPINGS } from '../data/constants.js';
 
-
-const orderSchema = mongoose.Schema
-({
-
-
+const orderSchema = mongoose.Schema({
     pizzeria: {
-
         type: mongoose.Schema.Types.ObjectId,
-
         ref: 'pizzeria',
-
-        required:true
-
+        required: true
     },
-
     customer: {
-
         type: mongoose.Schema.Types.ObjectId,
-
         ref: 'customer',
-
-        required:true
-
+        required: true
     },
-
-    orderDate: { type:Date, required:true, default:Date.now},
-
+    orderDate: { type: Date, required: true, default: Date.now },
     pizzas: [{
-
-        size: { type:String, required:true, enum:PIZZA_SIZES},
-
-        price: { type:String, required:true, min:0},
-
-        topping: [{ type:String, required:true, enum:PIZZA_TOPPINGS}],
-
-    }],
-
+        size: { type: String, required: true, enum: PIZZA_SIZES },
+        price: { type: String, required: true, min: 0 },
+        topping: [{ type: String, required: true, enum: PIZZA_TOPPINGS }],
+    }]
 })
-
-
 
 export default mongoose.model('Order', orderSchema);

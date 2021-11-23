@@ -13,8 +13,6 @@ const app = express();
 app.use(express.json());
 app.use(methodMiddleware);
 
-
-
 app.get("/", (req, res) => 
 {
     res.status(200);

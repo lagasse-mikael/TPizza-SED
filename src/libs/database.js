@@ -4,9 +4,6 @@ import '../../env.js';
 
 
 export default async () => {
-    
-    //const urlTemp = "mongodb+srv://risk:22battle@space-api.52fkj.mongodb.net/space-api?authSource=admin&replicaSet=atlas-7jpjdn-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true"
-
     const url = process.env.DATABASE;
     console.log(chalk.green(`[MONGO] - Establish new connection with url: ${url}`));
 
