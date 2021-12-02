@@ -6,7 +6,6 @@ class PizzeriaRepository {
 
     retrieveAllBySpeciality(retrieveOptions) {
 
-        let speci = `${retrieveOptions.speciality}`
         const retrieveQuery = Pizzeria.find()
         .skip(retrieveOptions.skip).limit(retrieveOptions.limit)
         .where('chef.speciality').equals(retrieveOptions.speciality)
@@ -36,6 +35,18 @@ class PizzeriaRepository {
 
         return retrieveResponse
     }
+
+    transform(pizzeria, transformOptions = {}) {
+
+        
+        
+        pizzeria.href = `/pizzerias/${pizzeria._id}`;
+        delete pizzeria._id;
+        delete pizzeria.__v;
+
+        return pizzeria;
+    }
+
 }
 
 export default new PizzeriaRepository()
