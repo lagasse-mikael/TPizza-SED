@@ -11,15 +11,66 @@ const router = express.Router()
 
 class CustomersRoutes {
     constructor() {
-        router.get('/', this.getAll)
+        router.get('/', paginate.middleware(20,40),this.getAll)
         router.get('/:customerID', this.getOne)
         router.post('/', customerValidator.complete(), validator, this.post);
         router.put('/', customerValidator.complete(), validator, this.put)
     }
 
-    getAll(req, res, next) {
-        console.log("get all");
-        res.status(httpStatus.OK).json("Get All")
+    async getAll(req, res, next) {
+        const transformOptions = {}
+
+        const retrieveOptions = {
+            skip: req.query.skip,
+            limit: req.query.limit,
+            page:req.query.page,
+            planet: req.query.planet
+        }
+
+        try {
+            const [customers,documentsCount] = await customerRepo.retrieveAll(retrieveOptions)
+            
+            if (!customers) { return next(HttpError.ImATeapot('Aucun client trouvé..?')) }
+            
+            const pageCount = Math.ceil(documentsCount / retrieveOptions.limit)
+            const hasNextPage = paginate.hasNextPages(req)(pageCount)
+            const pageArray = paginate.getArrayPages(req)(3,pageCount,req.query.page)
+
+            const reponse = {
+                _metadata: {
+                    hasNextPage: hasNextPage,
+                    page: retrieveOptions.page == 0 ? 1 : retrieveOptions.page,
+                    skip: retrieveOptions.skip,
+                    limit: retrieveOptions.limit,
+                    totalPages: pageCount,
+                    totalDocumentsCount: documentsCount
+                },
+                _links:{
+                    firstPage:`/explorations?page=0&limit=${req.query.limit}`,
+                    beforePage:pageArray[0].url,
+                    thisPage:pageArray[1].url,
+                    nextPage:pageArray[2].url,
+                    lastPage:`/customers?page=${pageCount}&limit=${req.query.limit}`
+                },
+                data:customers
+            }
+
+            if(req.query.page == 1){
+                delete reponse._links.beforePage
+                reponse._links.thisPage = pageArray[0].url
+                reponse._links.nextPage = pageArray[1].url
+            }
+
+            if(!hasNextPage){
+                delete reponse._links.nextPage
+                reponse._links.beforePage = pageArray[1].url
+                reponse._links.thisPage = pageArray[2].url
+            }
+
+            res.status(httpStatus.OK).json(reponse)
+        } catch (err) {
+            return next(err)
+        }
     }
 
     getOne(req, res, next) {

@@ -10,19 +10,20 @@ class PizzeriasRoutes {
     constructor() {
         router.get('/', paginate.middleware(25, 50), this.getAll)
         router.get('/:pizzeriaID', this.getOne)
-      //  router.get('/:pizzeriaID/orders/:orderID',this.getOneOrder)
+        //  router.get('/:pizzeriaID/orders/:orderID',this.getOneOrder)
     }
 
 
     async getAll(req, res, next) {
 
+        // Est tu sur que ton req.skip fonctionne? C'est pas 'req.query.skip' ?
         const retrieveOptions = {
             skip: req.skip,
             limit: req.query.limit,
             speciality: req.query.speciality
         };
 
-        const transformOptions = {};
+        const transformOptions = { };
 
         try {
 
@@ -30,7 +31,7 @@ class PizzeriasRoutes {
                 let [pizzerias, documentsCount] = await pizzeriaRepo.retrieveAllBySpeciality(retrieveOptions);
 
                 pizzerias = pizzerias.map(e => {
-                    e = e.toObject({ getters: false, virtuals: false });
+                    e = e.toObject({ getters: false, virtuals: true });
                     e = pizzeriaRepo.transform(e, transformOptions);
                     return e;
                 });
@@ -122,33 +123,31 @@ class PizzeriasRoutes {
         }
 
     }
-    
-    async getOne(req,res,next){
+
+    async getOne(req, res, next) {
         const pizzID = req.params.pizzeriaID
-        const wantsOrders = Boolean(req.query.embed)
+        const wantsOrders = req.query.embed && req.query.embed == "orders"
+        let transformOptions = { embed: { } }
+        if (wantsOrders) {
+            transformOptions.embed.orders = true;
+        }
         console.log(`Get One - Pizzeria - ID : ${pizzID}`);
 
-        try{
-            let reponse = await pizzeriaRepo.retrieveByID(pizzID)
+        try {
+            let reponse = await pizzeriaRepo.retrieveByID(pizzID, wantsOrders)
 
-            if(!reponse){
-                return next (HttpError.NotFound("Ca existe pas c'te pizzeria là!"))
+            if (!reponse) {
+                return next(HttpError.NotFound("Ca existe pas c'te pizzeria là!"))
             }
-            
-            return next(HttpError.NotFound("Ca existe pas c'te pizzeria là!"))
-
-            if(wantsOrders){
-                reponse = reponse.toObject({gettes:false,virtuals:false})
-                reponse = pizzeriaRepo.addEmbed(reponse)
-            }
+            reponse = pizzeriaRepo.transform(reponse,transformOptions)
 
             res.status(httpStatus.OK).json(reponse)
-        }catch(err){
+        } catch (err) {
             return next(err)
         }
     }
 }
-}
+
 
 new PizzeriasRoutes()
 

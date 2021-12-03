@@ -1,4 +1,7 @@
 import Pizzeria from '../models/pizzeria.model.js';
+import Order from '../models/order.model.js';
+import orderRepo from './order.repo.js';
+
 // import objectToDotNotation from '../libs/objectToDotNotation.js';
 // import dayjs from 'dayjs';
 
@@ -30,14 +33,27 @@ class PizzeriaRepository {
     }
 
 
-    retrieveByID(id) {
+    retrieveByID(id, wantsOrders) {
         const retrieveResponse = Pizzeria.findById(id)
+
+        if (wantsOrders)
+            retrieveResponse.populate('orders')
 
         return retrieveResponse
     }
 
-    addEmbed(pizzeria) {
-        // Doit attendre que l'equipier C aille faite la fonction.
+    transform(pizzeria, transformOptions = { }) {
+        if (transformOptions.embed && transformOptions.embed.orders) {
+            pizzeria.orders = pizzeria.orders.map(order => {
+                return orderRepo.transform(order)
+            })
+        }
+
+        pizzeria.href = `/${pizzeria.id}`
+
+        delete pizzeria._id
+        delete pizzeria.id
+
         return pizzeria
     }
 }
