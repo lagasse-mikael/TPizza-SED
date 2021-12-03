@@ -10,18 +10,19 @@ import validator from '../middlewares/validator.js';
 const router = express.Router()
 
 class CustomersRoutes {
-    constructor(){
-        router.get('/',this.getAll)
-        router.get('/:customerID',this.getOne)
-        router.post('/', customerValidator.complete(),validator ,this.post);
+    constructor() {
+        router.get('/', this.getAll)
+        router.get('/:customerID', this.getOne)
+        router.post('/', customerValidator.complete(), validator, this.post);
+        router.put('/', customerValidator.complete(), validator, this.put)
     }
 
-    getAll(req,res,next){
+    getAll(req, res, next) {
         console.log("get all");
         res.status(httpStatus.OK).json("Get All")
     }
-    
-    getOne(req,res,next){
+
+    getOne(req, res, next) {
         // Je sais pas c'est qui C , mais yeah , c'est a toi de jouer!!!
         console.log("get one");
         res.status(httpStatus.OK).json("Get One")
@@ -31,37 +32,41 @@ class CustomersRoutes {
         const newCustomer = req.body;
 
         let planetExists = false;
-        if(Object.keys(newCustomer).length === 0) {
+        if (Object.keys(newCustomer).length === 0) {
             return next(HttpError.BadRequest('Le client ne peut pas contenir aucune donnée'));
         }
-        
-        try  {
+
+        try {
             PLANET_NAMES.forEach(p => {
                 if (p === newCustomer.planet) {
-                    planetExists=true;
+                    planetExists = true;
                 }
             });
-            if (planetExists) {                
+            if (planetExists) {
                 let addClient = await customerRepo.create(newCustomer);
                 console.log(newCustomer)
-                addClient = addClient.toObject({getters:false, virtuals:false});
+                addClient = addClient.toObject({ getters: false, virtuals: false });
                 //addClient = customerRepo.transform(addClient);
-    
-                if(req.query._body === 'false') {
+
+                if (req.query._body === 'false') {
                     res.status(201).end()
                 } else {
                     res.status(201).json(addClient);
                 }
             }
-            else{
+            else {
                 return next(HttpError.BadRequest(`La planète n'existe pas`));
             }
 
-        } catch(err) {
+        } catch (err) {
             return next(err);
         }
 
-        
+
+    }
+
+    async put() {
+        res.status(httpStatus.IM_A_TEAPOT)
     }
 }
 

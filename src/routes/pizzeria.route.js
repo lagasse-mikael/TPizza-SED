@@ -120,11 +120,19 @@ class PizzeriasRoutes {
     
     async getOne(req,res,next){
         const pizzID = req.params.pizzeriaID
+        const wantsOrders = Boolean(req.query.embed)
         console.log(`Get One - Pizzeria - ID : ${pizzID}`);
+
         try{
-            const reponse = await pizzeriaRepo.retrieveByID(pizzID)
+            let reponse = await pizzeriaRepo.retrieveByID(pizzID)
+
             if(!reponse){
                 return next (HttpError.NotFound("Ca existe pas c'te pizzeria là!"))
+            }
+
+            if(wantsOrders){
+                reponse = reponse.toObject({gettes:false,virtuals:false})
+                reponse = pizzeriaRepo.addEmbed(reponse)
             }
 
             res.status(httpStatus.OK).json(reponse)
