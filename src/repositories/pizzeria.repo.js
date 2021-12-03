@@ -6,7 +6,6 @@ class PizzeriaRepository {
 
     retrieveAllBySpeciality(retrieveOptions) {
 
-        let speci = `${retrieveOptions.speciality}`
         const retrieveQuery = Pizzeria.find()
             .skip(retrieveOptions.skip).limit(retrieveOptions.limit)
             .where('chef.speciality').equals(retrieveOptions.speciality)
