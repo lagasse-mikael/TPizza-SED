@@ -2,6 +2,7 @@ import express from 'express';
 import paginate from 'express-paginate'
 import HttpError from 'http-errors';
 import httpStatus from 'http-status';
+import orderRepo from '../repositories/order.repo.js';
 import pizzeriaRepo from '../repositories/pizzeria.repo.js'
 
 const router = express.Router()
@@ -10,20 +11,44 @@ class PizzeriasRoutes {
     constructor() {
         router.get('/', paginate.middleware(25, 50), this.getAll)
         router.get('/:pizzeriaID', this.getOne)
-        //  router.get('/:pizzeriaID/orders/:orderID',this.getOneOrder)
+        router.get('/:pizzeriaID/orders/:orderID', this.getOneOrder)
     }
 
 
+    async getOneOrder(req, res, next) {
+        const pizzID = req.params.pizzeriaID
+        const orderId = req.params.orderID
+        let transformOptions = {}
+
+        console.log(`Get One - Order ID: ${orderId}- Pizzeria ID : ${pizzID}`);
+
+        try {
+            let response = await pizzeriaRepo.retrievePizzIdWithOrderId(pizzID, orderId)
+            console.log(response);             
+
+
+            if (!response) {
+                return next(HttpError.NotFound("Ca existe pas"))
+            }
+
+            res.status(httpStatus.OK).json(response)
+
+
+        } catch (err) {
+            return next(err)
+        }
+    }
+
     async getAll(req, res, next) {
 
-        // Est tu sur que ton req.skip fonctionne? C'est pas 'req.query.skip' ?
+        // Est tu sur que ton req.skip fonctionne? C'est pas 'req.query.skip' ? jsais pas
         const retrieveOptions = {
-            skip: req.skip,
+            skip: req.query.skip,
             limit: req.query.limit,
             speciality: req.query.speciality
         };
 
-        const transformOptions = { };
+        const transformOptions = {};
 
         try {
 
@@ -44,7 +69,7 @@ class PizzeriasRoutes {
                         hasNextPage: hasNextPage,
                         page: req.query.page,
                         limit: req.query.limit,
-                        skip: req.skip,
+                        skip: req.query.skip,
                         totalPages: pageCount,
                         totalDocuments: documentsCount
                     },
@@ -88,7 +113,7 @@ class PizzeriasRoutes {
                         hasNextPage: hasNextPage,
                         page: req.query.page,
                         limit: req.query.limit,
-                        skip: req.skip,
+                        skip: req.query.skip,
                         totalPages: pageCount,
                         totalDocuments: documentsCount
                     },
@@ -127,7 +152,7 @@ class PizzeriasRoutes {
     async getOne(req, res, next) {
         const pizzID = req.params.pizzeriaID
         const wantsOrders = req.query.embed && req.query.embed == "orders"
-        let transformOptions = { embed: { } }
+        let transformOptions = { embed: {} }
         if (wantsOrders) {
             transformOptions.embed.orders = true;
         }
@@ -139,7 +164,7 @@ class PizzeriasRoutes {
             if (!reponse) {
                 return next(HttpError.NotFound("Ca existe pas c'te pizzeria là!"))
             }
-            reponse = pizzeriaRepo.transform(reponse,transformOptions)
+            reponse = pizzeriaRepo.transform(reponse, transformOptions)
 
             res.status(httpStatus.OK).json(reponse)
         } catch (err) {

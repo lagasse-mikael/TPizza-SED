@@ -6,6 +6,12 @@ import orderRepo from './order.repo.js';
 // import dayjs from 'dayjs';
 
 class PizzeriaRepository {
+    
+    retrievePizzIdWithOrderId(idpizz,idorder){
+        const retrieveQuery = Order.find({pizzeria:{_id:idpizz}}).where("_id").equals(idorder)
+        // marche pas faut jle finisse
+        return retrieveQuery;
+    }
 
     retrieveAllBySpeciality(retrieveOptions) {
 
@@ -42,14 +48,14 @@ class PizzeriaRepository {
         return retrieveResponse
     }
 
-    transform(pizzeria, transformOptions = { }) {
+    transform(pizzeria, transformOptions = {}) {
         if (transformOptions.embed && transformOptions.embed.orders) {
             pizzeria.orders = pizzeria.orders.map(order => {
                 return orderRepo.transform(order)
             })
         }
 
-        pizzeria.href = `/${pizzeria.id}`
+        pizzeria.href = `/pizzerias/${pizzeria._id}`
 
         delete pizzeria._id
         delete pizzeria.id
