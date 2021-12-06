@@ -8,7 +8,8 @@ import orderRepo from './order.repo.js';
 class PizzeriaRepository {
     
     retrievePizzIdWithOrderId(idpizz,idorder){
-        const retrieveQuery = Order.find({pizzeria:{_id:idpizz}}).where("_id").equals(idorder)
+        const retrieveQuery = Order.find( {$and: [{pizzeria:idpizz},{_id:idorder}]})
+        //db.inventory.find( { $and: [ { price: { $ne: 1.99 } }, { price: { $exists: true } } ] } )
         // marche pas faut jle finisse
         return retrieveQuery;
     }

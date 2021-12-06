@@ -24,11 +24,15 @@ class PizzeriasRoutes {
 
         try {
             let response = await pizzeriaRepo.retrievePizzIdWithOrderId(pizzID, orderId)
-            console.log(response);             
-
-
-            if (!response) {
-                return next(HttpError.NotFound("Ca existe pas"))
+            console.log(response);       
+            if (response.length > 0) {                
+                response = response.map(e => {
+                    e = e.toObject({ getters: false, virtuals: false });
+                    e = orderRepo.transform(e, transformOptions);
+                    return e;
+                });
+            } else {
+                return next(HttpError.NotFound("la commande n'appartient pas a cette pizzeria"))
             }
 
             res.status(httpStatus.OK).json(response)
