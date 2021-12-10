@@ -9,7 +9,7 @@ const orderSchema = mongoose.Schema({
     },
     customer: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'customer',
+        ref: 'Customer',
         required: true
     },
     orderDate: { type: Date, required: true, default: Date.now },
@@ -23,5 +23,12 @@ const orderSchema = mongoose.Schema({
         collection: 'orders',
         strict: 'throw'
     })
+
+    /*orderSchema.virtual('customers',{
+        ref:'Customer',
+        foreignField:'order',
+        localField:'_id',
+        justOne:false
+    })  */
 
 export default mongoose.model('Order', orderSchema);

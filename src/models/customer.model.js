@@ -15,7 +15,7 @@ const customerSchema = mongoose.Schema({
 },
     {
         collection: 'customers',
-        strict: 'throw'
+        //strict: 'throw'
     }
 );
 

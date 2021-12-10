@@ -20,6 +20,13 @@ class CustomerRepository {
     create(customer) {
         return Customer.create(customer);
     }
+    transform(customer, transformOptions = {}){
+        
+        customer.href = `/customers/${customer._id}`
+
+        delete customer._id;
+        return customer;
+    }
 }
 
 export default new CustomerRepository()

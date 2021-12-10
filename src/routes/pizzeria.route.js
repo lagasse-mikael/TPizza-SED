@@ -18,12 +18,17 @@ class PizzeriasRoutes {
     async getOneOrder(req, res, next) {
         const pizzID = req.params.pizzeriaID
         const orderId = req.params.orderID
-        let transformOptions = {}
+        const retrieveOptions = {};
+        const transformOptions = { embed: {} }
+        if(req.query.embed && req.query.embed === 'customer') {
+            retrieveOptions.customer = true;
+            transformOptions.embed.customer = true;
+        }
 
         console.log(`Get One - Order ID: ${orderId}- Pizzeria ID : ${pizzID}`);
 
         try {
-            let response = await pizzeriaRepo.retrievePizzIdWithOrderId(pizzID, orderId)
+            let response = await pizzeriaRepo.retrievePizzIdWithOrderId(pizzID, orderId, retrieveOptions)
             console.log(response);       
             if (response.length > 0) {                
                 response = response.map(e => {
