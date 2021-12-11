@@ -21,7 +21,8 @@ const orderSchema = mongoose.Schema({
 },
     {
         collection: 'orders',
-        strict: 'throw'
+        strict: 'throw',
+        versionKey: false
     })
 
 export default mongoose.model('Order', orderSchema);

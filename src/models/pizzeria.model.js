@@ -16,7 +16,8 @@ const pizzeriaSchema = mongoose.Schema({
 },
     {
         collection: 'pizzerias',
-        strict: 'throw'
+        strict: 'throw',
+        versionKey: false
     }
 )
 

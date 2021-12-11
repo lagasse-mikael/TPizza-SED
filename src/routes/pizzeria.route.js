@@ -18,14 +18,14 @@ class PizzeriasRoutes {
     async getOneOrder(req, res, next) {
         const pizzID = req.params.pizzeriaID
         const orderId = req.params.orderID
-        let transformOptions = {}
+        let transformOptions = { }
 
         console.log(`Get One - Order ID: ${orderId}- Pizzeria ID : ${pizzID}`);
 
         try {
             let response = await pizzeriaRepo.retrievePizzIdWithOrderId(pizzID, orderId)
-            console.log(response);       
-            if (response.length > 0) {                
+            console.log(response);
+            if (response.length > 0) {
                 response = response.map(e => {
                     e = e.toObject({ getters: false, virtuals: false });
                     e = orderRepo.transform(e, transformOptions);
@@ -52,7 +52,7 @@ class PizzeriasRoutes {
             speciality: req.query.speciality
         };
 
-        const transformOptions = {};
+        const transformOptions = { };
 
         try {
 
@@ -122,11 +122,11 @@ class PizzeriasRoutes {
                         totalDocuments: documentsCount
                     },
                     _links: {
-                        first: `/pizzerias?page=1&limit=${req.query.limit}&speciality=${req.query.speciality}`,
+                        first: `/pizzerias?page=1&limit=${req.query.limit}&speciality=${req.query.speciality}`,     // Peux etre undefined.
                         prev: pageArray[0].url, //`${process.env.BASE_URL}${pageArray[0].url}`  
                         self: pageArray[1].url,
                         next: pageArray[2].url,
-                        last: `/pizzerias?page=${pageCount}&limit=${req.query.limit}&speciality=${req.query.speciality}`
+                        last: `/pizzerias?page=${pageCount}&limit=${req.query.limit}&speciality=${req.query.speciality}`    // Peux etre undefined.
                     },
                     data: pizzerias
                 };
@@ -156,7 +156,7 @@ class PizzeriasRoutes {
     async getOne(req, res, next) {
         const pizzID = req.params.pizzeriaID
         const wantsOrders = req.query.embed && req.query.embed == "orders"
-        let transformOptions = { embed: {} }
+        let transformOptions = { embed: { } }
         if (wantsOrders) {
             transformOptions.embed.orders = true;
         }
@@ -168,6 +168,8 @@ class PizzeriasRoutes {
             if (!reponse) {
                 return next(HttpError.NotFound("Ca existe pas c'te pizzeria là!"))
             }
+            // Quand on pense qu'il va avoir un embed , c'est virtuals a true..?
+            reponse = reponse.toObject({ getters: false, virtuals: true })
             reponse = pizzeriaRepo.transform(reponse, transformOptions)
 
             res.status(httpStatus.OK).json(reponse)

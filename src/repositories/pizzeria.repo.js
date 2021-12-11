@@ -49,6 +49,7 @@ class PizzeriaRepository {
         return retrieveResponse
     }
 
+    // Devrais etre complet.
     transform(pizzeria, transformOptions = {}) {
         if (transformOptions.embed && transformOptions.embed.orders) {
             pizzeria.orders = pizzeria.orders.map(order => {
@@ -56,6 +57,7 @@ class PizzeriaRepository {
             })
         }
 
+        pizzeria.lightspeed = `[${pizzeria.planet}]@${pizzeria.coord.lat};${pizzeria.coord.lon}`
         pizzeria.href = `/pizzerias/${pizzeria._id}`
 
         delete pizzeria._id
