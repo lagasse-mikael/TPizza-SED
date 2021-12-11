@@ -11,7 +11,7 @@ class PizzeriaRepository {
         const retrieveQuery = Order.find( {$and: [{pizzeria:idpizz},{_id:idorder}]})
 
         if (retrieveOptions.customer)
-        retrieveQuery.populate('customer')
+            retrieveQuery.populate('customer')
 
         return retrieveQuery;
     }

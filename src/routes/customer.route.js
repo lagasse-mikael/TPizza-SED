@@ -11,30 +11,30 @@ const router = express.Router()
 
 class CustomersRoutes {
     constructor() {
-        router.get('/', paginate.middleware(20,40),this.getAll)
+        router.get('/', paginate.middleware(20, 40), this.getAll)
         router.get('/:customerID', this.getOne)
         router.post('/', customerValidator.complete(), validator, this.post);
-        router.put('/', customerValidator.complete(), validator, this.put)
+        router.put('/:customerID', customerValidator.complete(), validator, this.put)
     }
 
     async getAll(req, res, next) {
-        const transformOptions = {}
+        const transformOptions = { }
 
         const retrieveOptions = {
             skip: req.query.skip,
             limit: req.query.limit,
-            page:req.query.page,
+            page: req.query.page,
             planet: req.query.planet
         }
 
         try {
-            const [customers,documentsCount] = await customerRepo.retrieveAll(retrieveOptions)
-            
+            const [customers, documentsCount] = await customerRepo.retrieveAll(retrieveOptions)
+
             if (!customers) { return next(HttpError.ImATeapot('Aucun client trouvé..?')) }
-            
+
             const pageCount = Math.ceil(documentsCount / retrieveOptions.limit)
             const hasNextPage = paginate.hasNextPages(req)(pageCount)
-            const pageArray = paginate.getArrayPages(req)(3,pageCount,req.query.page)
+            const pageArray = paginate.getArrayPages(req)(3, pageCount, req.query.page)
 
             const reponse = {
                 _metadata: {
@@ -45,23 +45,23 @@ class CustomersRoutes {
                     totalPages: pageCount,
                     totalDocumentsCount: documentsCount
                 },
-                _links:{
-                    firstPage:`/explorations?page=0&limit=${req.query.limit}`,
-                    beforePage:pageArray[0].url,
-                    thisPage:pageArray[1].url,
-                    nextPage:pageArray[2].url,
-                    lastPage:`/customers?page=${pageCount}&limit=${req.query.limit}`
+                _links: {
+                    firstPage: `/explorations?page=0&limit=${req.query.limit}`,
+                    beforePage: pageArray[0].url,
+                    thisPage: pageArray[1].url,
+                    nextPage: pageArray[2].url,
+                    lastPage: `/customers?page=${pageCount}&limit=${req.query.limit}`
                 },
-                data:customers
+                data: customers
             }
 
-            if(req.query.page == 1){
+            if (req.query.page == 1) {
                 delete reponse._links.beforePage
                 reponse._links.thisPage = pageArray[0].url
                 reponse._links.nextPage = pageArray[1].url
             }
 
-            if(!hasNextPage){
+            if (!hasNextPage) {
                 delete reponse._links.nextPage
                 reponse._links.beforePage = pageArray[1].url
                 reponse._links.thisPage = pageArray[2].url
@@ -73,10 +73,30 @@ class CustomersRoutes {
         }
     }
 
-    getOne(req, res, next) {
-        // Je sais pas c'est qui C , mais yeah , c'est a toi de jouer!!!
-        console.log("get one");
-        res.status(httpStatus.OK).json("Get One")
+    // Je l'ai fait quand meme.
+    async getOne(req, res, next) {
+        const customerID = req.params.customerID
+        const wantsOrders = req.query.embed && req.query.embed == "orders"
+        let transformOptions = { embed: { } }
+        if (wantsOrders) {
+            transformOptions.embed.orders = true;
+        }
+        console.log(`Get One - Customer - ID : ${customerID}`);
+
+        try {
+            let reponse = await customerRepo.retrieveByID(customerID, wantsOrders)
+
+            if (!reponse) {
+                return next(HttpError.NotFound("Ca existe pas c'te client là!"))
+            }
+            // Quand on pense qu'il va avoir un embed , c'est virtuals a true..?
+            reponse = reponse.toObject({ getters: false, virtuals: true })
+            reponse = customerRepo.transform(reponse, transformOptions)
+
+            res.status(httpStatus.OK).json(reponse)
+        } catch (err) {
+            return next(err)
+        }
     }
 
     async post(req, res, next) {
@@ -88,12 +108,14 @@ class CustomersRoutes {
         }
 
         try {
-            PLANET_NAMES.forEach(p => {
-                if (p === newCustomer.planet) {
-                    planetExists = true;
-                }
-            });
-            if (planetExists) {
+            // PLANET_NAMES.forEach(p => {
+            //     if (p === newCustomer.planet) {
+            //         planetExists = true;
+            //     }
+            // });
+            
+            // ;)
+            if (PLANET_NAMES.includes(newCustomer.planet)) {
                 let addClient = await customerRepo.create(newCustomer);
                 console.log(newCustomer)
                 addClient = addClient.toObject({ getters: false, virtuals: false });
@@ -116,8 +138,32 @@ class CustomersRoutes {
 
     }
 
-    async put() {
-        res.status(httpStatus.IM_A_TEAPOT)
+    async put(req, res, next) {
+        const wantsFeedBack = req.query._body == 'true'
+        console.log(`wantsFeedback : ${wantsFeedBack}`)
+
+        try {
+            const uniqueEmail = await customerRepo.isUnique(req.body.email)
+            
+            if (!uniqueEmail)
+                return next(HttpError[409]("Le client forunis une adresse email deja utiliser."))
+
+            let reponse = await customerRepo.fullUpdate(req.params.customerID, req.body)
+
+            if (!reponse)
+                return next(HttpError.NotFound("Le client demander n'existe pas."))
+
+            if (wantsFeedBack){
+                reponse = reponse.toObject({ getters: false, virtuals: false })
+                reponse = customerRepo.transform(reponse)
+
+                res.status(201).json(reponse)
+            }
+            else
+                res.status(204).json({"OK":"OK"})
+        } catch (err) {
+            return next(err)
+        }
     }
 }
 
