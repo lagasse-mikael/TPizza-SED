@@ -6,11 +6,13 @@ import orderRepo from './order.repo.js';
 // import dayjs from 'dayjs';
 
 class PizzeriaRepository {
-    
-    retrievePizzIdWithOrderId(idpizz,idorder){
+
+    retrievePizzIdWithOrderId(idpizz,idorder,retrieveOptions){
         const retrieveQuery = Order.find( {$and: [{pizzeria:idpizz},{_id:idorder}]})
-        //db.inventory.find( { $and: [ { price: { $ne: 1.99 } }, { price: { $exists: true } } ] } )
-        // marche pas faut jle finisse
+
+        if (retrieveOptions.customer)
+        retrieveQuery.populate('customer')
+
         return retrieveQuery;
     }
 

@@ -1,21 +1,30 @@
 import Order from '../models/order.model.js';
+import customerRepo from './customer.repo.js';
 // import objectToDotNotation from '../libs/objectToDotNotation.js';
 // import dayjs from 'dayjs';
 
 class OrderRepository {
 
     transform(order, transformOptions = { }) {
-        order.customer = { href: `/${order.customer}` }
-        order.pizzeria = { href: `/${order.pizzeria}` }
+
+        order.pizzeria = { href: `/pizzerias/${order.pizzeria}` }
         
+        if(transformOptions.embed && transformOptions.embed.customer) {
+            order.customer = customerRepo.transform(order.customer, transformOptions);
+        } else{
+            order.customer = { href: `/customers/${order.customer}` }
+        }
+
         order.pizzas = order.pizzas.map(pizza => {
             delete pizza.id
             delete pizza._id
             
             return pizza
         })
+
         
-        order.href = `/${order.id}`
+        
+        order.href = `/orders/${order._id}`
         
         delete order.id
         delete order._id
