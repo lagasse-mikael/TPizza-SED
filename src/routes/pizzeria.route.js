@@ -86,7 +86,7 @@ class PizzeriasRoutes {
                         prev: pageArray[0].url, //`${process.env.BASE_URL}${pageArray[0].url}`  
                         self: pageArray[1].url,
                         // next:pageArray[2].url,
-                        last: `/pizzerias?page=${pageCount}&speciality=${req.query.speciality}`
+                        last: `/pizzerias?page=${pageCount}&limit=${req.query.limit}&speciality=${req.query.speciality}`
                     },
                     data: pizzerias
                 };
