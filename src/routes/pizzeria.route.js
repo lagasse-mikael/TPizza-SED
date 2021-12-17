@@ -50,9 +50,8 @@ class PizzeriasRoutes {
 
     async getAll(req, res, next) {
 
-        // Est tu sur que ton req.skip fonctionne? C'est pas 'req.query.skip' ? jsais pas
         const retrieveOptions = {
-            skip: req.query.skip,
+            skip: req.skip,
             limit: req.query.limit,
             speciality: req.query.speciality
         };
@@ -78,7 +77,7 @@ class PizzeriasRoutes {
                         hasNextPage: hasNextPage,
                         page: req.query.page,
                         limit: req.query.limit,
-                        skip: req.query.skip,
+                        skip: req.skip,
                         totalPages: pageCount,
                         totalDocuments: documentsCount
                     },
@@ -87,7 +86,7 @@ class PizzeriasRoutes {
                         prev: pageArray[0].url, //`${process.env.BASE_URL}${pageArray[0].url}`  
                         self: pageArray[1].url,
                         // next:pageArray[2].url,
-                        last: `/pizzerias?page=${pageCount}&limit=${req.query.limit}&speciality=${req.query.speciality}`
+                        last: `/pizzerias?page=${pageCount}&speciality=${req.query.speciality}`
                     },
                     data: pizzerias
                 };
@@ -122,16 +121,16 @@ class PizzeriasRoutes {
                         hasNextPage: hasNextPage,
                         page: req.query.page,
                         limit: req.query.limit,
-                        skip: req.query.skip,
+                        skip: req.skip,
                         totalPages: pageCount,
                         totalDocuments: documentsCount
                     },
                     _links: {
-                        first: `/pizzerias?page=1&limit=${req.query.limit}&speciality=${req.query.speciality}`,     // Peux etre undefined.
+                        first: `/pizzerias?page=1&limit=${req.query.limit}`,
                         prev: pageArray[0].url, //`${process.env.BASE_URL}${pageArray[0].url}`  
                         self: pageArray[1].url,
                         next: pageArray[2].url,
-                        last: `/pizzerias?page=${pageCount}&limit=${req.query.limit}&speciality=${req.query.speciality}`    // Peux etre undefined.
+                        last: `/pizzerias?page=${pageCount}&limit=${req.query.limit}`
                     },
                     data: pizzerias
                 };

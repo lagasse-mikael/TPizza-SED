@@ -21,20 +21,28 @@ class CustomersRoutes {
         const transformOptions = { }
 
         const retrieveOptions = {
-            skip: req.query.skip,
+            skip: req.skip,
             limit: req.query.limit,
             page: req.query.page,
             planet: req.query.planet
         }
 
+        console.log(retrieveOptions);
+
         try {
-            const [customers, documentsCount] = await customerRepo.retrieveAll(retrieveOptions)
+            let [customers, documentsCount] = await customerRepo.retrieveAll(retrieveOptions)
 
             if (!customers) { return next(HttpError.ImATeapot('Aucun client trouvé..?')) }
 
             const pageCount = Math.ceil(documentsCount / retrieveOptions.limit)
             const hasNextPage = paginate.hasNextPages(req)(pageCount)
             const pageArray = paginate.getArrayPages(req)(3, pageCount, req.query.page)
+
+            customers = customers.map(customer => {
+                customer = customer.toObject({ getters: false, virtuals: false })
+                customer = customerRepo.transform(customer)
+                return customer
+            })
 
             const reponse = {
                 _metadata: {
@@ -113,7 +121,7 @@ class CustomersRoutes {
             //         planetExists = true;
             //     }
             // });
-            
+
             // ;)
             if (PLANET_NAMES.includes(newCustomer.planet)) {
                 let addClient = await customerRepo.create(newCustomer);
@@ -139,12 +147,12 @@ class CustomersRoutes {
     }
 
     async put(req, res, next) {
-        const wantsFeedBack = req.query._body == 'true'
+        const wantsFeedBack = req.query._body && req.query._body == 'true'
         console.log(`wantsFeedback : ${wantsFeedBack}`)
 
         try {
             const uniqueEmail = await customerRepo.isUnique(req.body.email)
-            
+
             if (!uniqueEmail)
                 return next(HttpError[409]("Le client forunis une adresse email deja utiliser."))
 
@@ -153,14 +161,14 @@ class CustomersRoutes {
             if (!reponse)
                 return next(HttpError.NotFound("Le client demander n'existe pas."))
 
-            if (wantsFeedBack){
+            if (wantsFeedBack) {
                 reponse = reponse.toObject({ getters: false, virtuals: false })
                 reponse = customerRepo.transform(reponse)
 
                 res.status(201).json(reponse)
             }
             else
-                res.status(204).json({"OK":"OK"})
+                res.status(204).json({})
         } catch (err) {
             return next(err)
         }
